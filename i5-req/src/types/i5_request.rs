@@ -1,6 +1,8 @@
 use base64::{Engine, engine::general_purpose};
 use serde::Serialize;
 
+use crate::types::i5_error::I5RequestError;
+
 #[derive(Serialize, Debug)]
 pub struct Field {
     #[serde(rename = "Name")]
@@ -127,5 +129,39 @@ impl I5Reqeust {
     /// Get Document Reference
     pub fn get_document(&self, index: usize) -> Option<&Document> {
         self.documents.get(index)
+    }
+
+    /// Check if current Request Object is valid.
+    pub fn is_valid(&self) -> bool {
+        // Request needs at least one Document.
+        if self.documents.is_empty() {
+            return false;
+        }
+
+        // Each Document needs at least either one field or one file.
+        for document in &self.documents {
+            if document.fields.is_empty() && document.files.is_empty() {
+                return false;
+            }
+        }
+
+        true
+    }
+
+    /// Validate Request Object.
+    pub fn validate(self) -> Result<ValidatedI5Request, I5RequestError> {
+        if self.is_valid() {
+            Ok(ValidatedI5Request(self))
+        } else {
+            Err(I5RequestError::ValidationError)
+        }
+    }
+}
+
+pub struct ValidatedI5Request(I5Reqeust);
+
+impl ValidatedI5Request {
+    pub fn to_json_string(&self) -> Result<String, I5RequestError> {
+        serde_json::to_string(&self.0).map_err(|e| I5RequestError::SerializeError)
     }
 }
