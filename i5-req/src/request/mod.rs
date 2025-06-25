@@ -17,7 +17,7 @@ pub async fn i5_http_post(
 
     client
         .post(url.to_url())
-        .header("Conten-Type", "application/json")
+        .header("Content-Type", "application/json")
         .body(body)
         .send()
         .await
