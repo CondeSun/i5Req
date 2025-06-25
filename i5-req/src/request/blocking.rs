@@ -5,9 +5,14 @@ use crate::types::{
 pub fn i5_http_post(
     valid_body: ValidatedI5Request,
     url: I5RequestUrl,
+    allow_untrusted_cert: bool,
 ) -> Result<(), I5RequestError> {
     let body = valid_body.to_json_string()?;
-    let client = reqwest::blocking::Client::new();
+    let client = reqwest::blocking::Client::builder()
+        .danger_accept_invalid_certs(allow_untrusted_cert)
+        .build()
+        .map_err(I5RequestError::RequestError)?;
+
     client
         .post(url.to_url())
         .header("Conten-Type", "application/json")
