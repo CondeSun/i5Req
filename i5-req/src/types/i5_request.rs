@@ -162,6 +162,6 @@ pub struct ValidatedI5Request(I5Reqeust);
 
 impl ValidatedI5Request {
     pub fn to_json_string(&self) -> Result<String, I5RequestError> {
-        serde_json::to_string(&self.0).map_err(|e| I5RequestError::SerializeError)
+        serde_json::to_string(&self.0).map_err(I5RequestError::SerializeError)
     }
 }

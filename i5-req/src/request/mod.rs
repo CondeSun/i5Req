@@ -16,6 +16,6 @@ pub async fn i5_http_post(
         .body(body)
         .send()
         .await
-        .map_err(|e| I5RequestError::RequestError)?;
+        .map_err(I5RequestError::RequestError)?;
     Ok(())
 }

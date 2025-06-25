@@ -13,6 +13,6 @@ pub fn i5_http_post(
         .header("Conten-Type", "application/json")
         .body(body)
         .send()
-        .map_err(|e| I5RequestError::RequestError)?;
+        .map_err(I5RequestError::RequestError)?;
     Ok(())
 }
