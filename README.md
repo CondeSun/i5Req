@@ -3,6 +3,12 @@ A simple Interface5-WebserviceInput Rust Client.
 
 ## Examples
 ```rust
+use i5_req::{
+    request::blocking::i5_http_post,
+    types::{i5_request::I5Reqeust, i5_request_url::I5RequestUrl},
+};
+use std::fs;
+
 fn main() {
     let i5_url: I5RequestUrl =
         I5RequestUrl::new("ip/hostname", 43001, "Scenario", "Tenant");
