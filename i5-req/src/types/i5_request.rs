@@ -1,5 +1,6 @@
 use base64::{Engine, engine::general_purpose};
 use serde::Serialize;
+use std::collections::HashSet;
 
 use crate::types::i5_error::I5RequestError;
 
@@ -179,7 +180,15 @@ impl I5Reqeust {
 
         // Each Document needs at least either one field or one file.
         for document in &self.documents {
-            if document.fields.is_empty() && document.files.is_empty() {
+            let item_numbers: Vec<i32> = document
+                .fields
+                .iter()
+                .map(|field| field.item_number)
+                .collect();
+            if document.fields.is_empty()
+                && document.files.is_empty()
+                && !is_continuous(&item_numbers)
+            {
                 return false;
             }
         }
@@ -206,5 +215,44 @@ impl ValidatedI5Request {
     /// Serializes the validated request into a JSON string.
     pub fn to_json_string(&self) -> Result<String, I5RequestError> {
         serde_json::to_string(&self.0).map_err(I5RequestError::SerializeError)
+    }
+}
+
+/// Checks if a given list of integers forms a continuous, gapless sequence (ignoring zeros).
+///
+/// This function verifies whether the non-zero, unique values in the input slice form a sequence
+/// without missing integers starting from 1 up to the maximum value found.
+///
+/// # Rules:
+///
+/// - Duplicate numbers are ignored (only unique values are considered).
+/// - Zeros are ignored.
+/// - The maximum number in the set must be less than or equal to the count of unique, non-zero numbers.
+///
+/// # Example:
+///
+/// ```rust
+/// use your_crate_name::is_continuous;
+///
+/// assert!(is_continuous(&[0, 1, 2, 3, 4, 5]));          // ✅ True (Continuous 1-5)
+/// assert!(is_continuous(&[0, 1, 2, 3, 5, 4, 6, 7]));    // ✅ True (1-7, ignoring duplicates and zeros)
+/// assert!(!is_continuous(&[0, 1, 2, 4, 5]));            // ❌ False (Missing 3)
+/// assert!(!is_continuous(&[1, 2, 3, 7, 8]));            // ❌ False (Gaps)
+/// ```
+///
+/// # Arguments
+///
+/// * `numbers` - A slice of integers to check.
+///
+/// # Returns
+///
+/// * `true` if the sequence is continuous and gapless (ignoring zeros and duplicates),
+/// * `false` otherwise.
+fn is_continuous(numbers: &[i32]) -> bool {
+    let unique_set: HashSet<&i32> = HashSet::from_iter(numbers.iter().filter(|value| **value != 0));
+
+    match unique_set.iter().max() {
+        Some(max) => **max as usize <= unique_set.len(),
+        None => true,
     }
 }
