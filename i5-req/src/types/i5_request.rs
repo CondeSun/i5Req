@@ -185,9 +185,8 @@ impl I5Reqeust {
                 .iter()
                 .map(|field| field.item_number)
                 .collect();
-            if document.fields.is_empty()
-                && document.files.is_empty()
-                && !is_continuous(&item_numbers)
+            if (document.fields.is_empty() && document.files.is_empty())
+                || !is_continuous(&item_numbers)
             {
                 return false;
             }
